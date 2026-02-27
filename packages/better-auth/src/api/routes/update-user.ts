@@ -495,7 +495,7 @@ export const deleteUser = createAuthEndpoint(
 				query: {
 					token: ctx.body.token,
 				},
-			});
+			} as any);
 			return ctx.json({
 				success: true,
 				message: "User deleted",

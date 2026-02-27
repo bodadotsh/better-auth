@@ -127,6 +127,7 @@ describe("Origin Check", async () => {
 			email: testUser.email,
 			password: testUser.password,
 			fetchOptions: {
+				// @ts-expect-error extra runtime query param not in endpoint schema
 				query: {
 					currentURL: "http://localhost:5000",
 				},

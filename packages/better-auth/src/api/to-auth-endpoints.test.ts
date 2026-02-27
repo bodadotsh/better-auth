@@ -100,7 +100,7 @@ describe("before hook", async () => {
 				query: {
 					key: "value",
 				},
-			});
+			} as any);
 			expect(res2).toMatchObject({
 				name: "query",
 				key: "value",
@@ -114,7 +114,7 @@ describe("before hook", async () => {
 				body: {
 					key: "value",
 				},
-			});
+			} as any);
 			expect(res2).toMatchObject({
 				name: "body",
 				key: "value",

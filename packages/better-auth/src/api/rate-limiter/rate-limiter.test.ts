@@ -86,6 +86,7 @@ describe("rate-limiter", async () => {
 		for (let i = 0; i < 25; i++) {
 			const response = await client.listSessions({
 				fetchOptions: {
+					// @ts-expect-error extra runtime query param not in endpoint schema
 					query: {
 						"test-query": Math.random().toString(),
 					},
