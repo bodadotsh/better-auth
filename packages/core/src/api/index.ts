@@ -104,10 +104,10 @@ export function createAuthEndpoint<
 	any,
 	BodySchema extends StandardSchemaV1
 		? NonNullable<BodySchema["~standard"]["types"]>["input"]
-		: any,
+		: undefined,
 	QuerySchema extends StandardSchemaV1
 		? NonNullable<QuerySchema["~standard"]["types"]>["input"]
-		: any,
+		: undefined,
 	any,
 	R,
 	Meta
@@ -151,10 +151,10 @@ export function createAuthEndpoint<
 	any,
 	BodySchema extends StandardSchemaV1
 		? NonNullable<BodySchema["~standard"]["types"]>["input"]
-		: any,
+		: undefined,
 	QuerySchema extends StandardSchemaV1
 		? NonNullable<QuerySchema["~standard"]["types"]>["input"]
-		: any,
+		: undefined,
 	any,
 	R,
 	Meta
