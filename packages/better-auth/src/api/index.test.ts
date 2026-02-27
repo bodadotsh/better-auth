@@ -45,7 +45,7 @@ describe("getEndpoints", () => {
 			context: { customProp: "value" },
 		};
 
-		await middlewares[0]!.middleware(testCtx);
+		await middlewares[0]!.middleware(testCtx as any);
 
 		expect(middlewareFn).toHaveBeenCalled();
 		const call = middlewareFn.mock.calls[0]![0];

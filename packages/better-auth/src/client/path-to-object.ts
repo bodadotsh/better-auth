@@ -86,11 +86,12 @@ export type InferUserUpdateCtx<
 	UnionToIntersection<InferAdditionalFromClient<ClientOpts, "user", "input">>
 >;
 
-export type InferCtx<
+type InferCtxQuery<
 	C extends InputContext<any, any, any, any, any, any>,
 	FetchOptions extends ClientFetchOption,
-> = [C["body"]] extends [Record<string, any>]
-	? C["body"] & {
+> = 0 extends 1 & C["query"]
+	? {
+			query?: Record<string, any> | undefined;
 			fetchOptions?: FetchOptions | undefined;
 		}
 	: [C["query"]] extends [Record<string, any>]
@@ -107,12 +108,24 @@ export type InferCtx<
 					fetchOptions?: FetchOptions | undefined;
 				};
 
+export type InferCtx<
+	C extends InputContext<any, any, any, any, any, any>,
+	FetchOptions extends ClientFetchOption,
+> = 0 extends 1 & C["body"]
+	? // body is `any` — skip body intersection so fetchOptions stays typed
+		InferCtxQuery<C, FetchOptions>
+	: [C["body"]] extends [Record<string, any>]
+		? C["body"] & {
+				fetchOptions?: FetchOptions | undefined;
+			}
+		: InferCtxQuery<C, FetchOptions>;
+
 export type MergeRoutes<T> = UnionToIntersection<T>;
 
 export type InferRoute<API, COpts extends BetterAuthClientOptions> =
 	API extends Record<string, infer T>
-		? T extends Endpoint
-			? T["options"]["metadata"] extends
+		? T extends Endpoint<any, any, any, any, any, any, infer Meta>
+			? [Meta] extends [
 					| {
 							isAction: false;
 					  }
@@ -124,7 +137,8 @@ export type InferRoute<API, COpts extends BetterAuthClientOptions> =
 					  }
 					| {
 							scope: "server";
-					  }
+					  },
+				]
 				? {}
 				: PathToObject<
 						T["path"],
@@ -168,7 +182,7 @@ export type InferRoute<API, COpts extends BetterAuthClientOptions> =
 												]
 									) => Promise<
 										BetterFetchResponse<
-											T["options"]["metadata"] extends {
+											Meta extends {
 												CUSTOM_SESSION: boolean;
 											}
 												? NonNullable<Awaited<R>>

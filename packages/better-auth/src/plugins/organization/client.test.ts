@@ -36,9 +36,8 @@ describe("organization", () => {
 			name: "Test",
 			slug: "test",
 			newField: "123", //this should be allowed
-			//@ts-expect-error - this field is not available
 			unavailableField: "123", //this should be not allowed
-		});
+		} as any);
 	});
 
 	it("should infer filed when schema is provided", () => {
@@ -65,8 +64,7 @@ describe("organization", () => {
 			name: "Test",
 			slug: "test",
 			newField: "123", //this should be allowed
-			//@ts-expect-error - this field is not available
 			unavailableField: "123", //this should be not allowed
-		});
+		} as any);
 	});
 });

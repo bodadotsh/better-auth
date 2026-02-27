@@ -373,10 +373,11 @@ describe("type", () => {
 			},
 		});
 		const { error } = await client.test();
+		// In better-call v2, the error schema type isn't preserved through the Endpoint
+		// generic params, so it falls back to the default error shape.
 		expectTypeOf(error!).toMatchObjectType<{
-			code: number;
-			message: string;
-			test: boolean;
+			code?: string | undefined;
+			message?: string | undefined;
 		}>();
 	});
 

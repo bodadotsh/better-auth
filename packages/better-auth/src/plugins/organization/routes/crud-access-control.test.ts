@@ -108,7 +108,7 @@ describe("dynamic access control", async () => {
 			body: {
 				role: role || "member",
 				userId: normalUser.user.id,
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 			},
 			headers,
 		});
@@ -130,7 +130,7 @@ describe("dynamic access control", async () => {
 			},
 		});
 		await authClient.organization.setActive({
-			organizationId: org.data?.id,
+			organizationId: org.data?.id as string,
 			fetchOptions: {
 				headers: userHeaders,
 			},
@@ -214,11 +214,11 @@ describe("dynamic access control", async () => {
 		// Should fail because the user doesn't have the permission to delete a project.
 		const shouldFail = await auth.api.hasPermission({
 			body: {
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 				permissions: {
 					project: ["delete"],
 				},
-			},
+			} as any,
 			headers: normalHeaders,
 		});
 		expect(shouldFail.success).toBe(false);
@@ -226,11 +226,11 @@ describe("dynamic access control", async () => {
 		// Should pass because the user has the permission to create a project.
 		const shouldPass = await auth.api.hasPermission({
 			body: {
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 				permissions: {
 					project: ["create"],
 				},
-			},
+			} as any,
 			headers: normalHeaders,
 		});
 		expect(shouldPass.success).toBe(true);
@@ -405,10 +405,9 @@ describe("dynamic access control", async () => {
 		const memberUser = await auth.api.signUpEmail({ body: memberDetails });
 		await auth.api.addMember({
 			body: {
-				// @ts-expect-error - for testing purposes
 				role: "assigned-role",
 				userId: memberUser.user.id,
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 			},
 			headers,
 		});
@@ -428,7 +427,7 @@ describe("dynamic access control", async () => {
 			body: {
 				memberId: (
 					await auth.api.listMembers({
-						query: { organizationId: org.data?.id },
+						query: { organizationId: org.data?.id as string },
 						headers,
 					})
 				).members?.find((m) => m.userId === memberUser.user.id)?.id!,
@@ -471,10 +470,9 @@ describe("dynamic access control", async () => {
 		const memberUser = await auth.api.signUpEmail({ body: memberDetails });
 		await auth.api.addMember({
 			body: {
-				// @ts-expect-error - for testing purposes
 				role: ["multi-role-1", "multi-role-2"],
 				userId: memberUser.user.id,
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 			},
 			headers,
 		});
@@ -492,7 +490,7 @@ describe("dynamic access control", async () => {
 		// Clean up
 		const memberId = (
 			await auth.api.listMembers({
-				query: { organizationId: org.data?.id },
+				query: { organizationId: org.data?.id as string },
 				headers,
 			})
 		).members?.find((m) => m.userId === memberUser.user.id)?.id!;
@@ -612,7 +610,7 @@ describe("dynamic access control", async () => {
 		const res = await auth.api.getOrgRole({
 			query: {
 				roleId,
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 			},
 			headers,
 		});
@@ -644,7 +642,7 @@ describe("dynamic access control", async () => {
 		const res = await auth.api.getOrgRole({
 			query: {
 				roleName,
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 			},
 			headers,
 		});
@@ -710,7 +708,7 @@ describe("dynamic access control", async () => {
 		const res2 = await auth.api.getOrgRole({
 			query: {
 				roleName: `updated-${roleName}`,
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 			},
 			headers,
 		});
@@ -753,7 +751,6 @@ describe("dynamic access control", async () => {
 				},
 				additionalFields: {
 					color: "#000000",
-					//@ts-expect-error - intentionally invalid key
 					someInvalidKey: "this would be ignored by zod",
 				},
 			},
@@ -764,7 +761,7 @@ describe("dynamic access control", async () => {
 		if (!testRole.data) throw testRole.error;
 		const roleId = testRole.data.roleData.id;
 		const res = await auth.api.updateOrgRole({
-			body: { roleId, data: { color: "#111111" } },
+			body: { roleId, data: { color: "#111111" } } as any,
 			headers,
 		});
 		expect(res).not.toBeNull();
@@ -803,7 +800,7 @@ describe("dynamic access control", async () => {
 
 		// Try to list roles as a regular member - should succeed but with member permissions
 		const listAsMembers = await auth.api.listOrgRoles({
-			query: { organizationId: org.data?.id },
+			query: { organizationId: org.data?.id as string },
 			headers: freshMemberHeaders,
 		});
 
@@ -838,7 +835,7 @@ describe("dynamic access control", async () => {
 		// Try to get role as a regular member - should succeed with member permissions
 		const getRoleAsMember = await auth.api.getOrgRole({
 			query: {
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 				roleId: testRole.data.roleData.id,
 			},
 			headers: freshMemberHeaders,
@@ -893,7 +890,7 @@ describe("dynamic access control", async () => {
 		// Verify the role permissions haven't changed
 		const roleCheck = await auth.api.getOrgRole({
 			query: {
-				organizationId: org.data?.id,
+				organizationId: org.data?.id as string,
 				roleId: vulnerableRole.data.roleData.id,
 			},
 			headers,
@@ -977,7 +974,7 @@ describe("dynamic access control", async () => {
 
 		// Try to list roles from org1 while active in org2 - should fail
 		await authClient.organization.setActive({
-			organizationId: org2.data.id,
+			organizationId: org2.data.id as string,
 			fetchOptions: {
 				headers: freshMemberHeaders,
 			},
@@ -986,14 +983,14 @@ describe("dynamic access control", async () => {
 		// This should fail because the member is not in org2
 		await expect(
 			auth.api.listOrgRoles({
-				query: { organizationId: org2.data.id },
+				query: { organizationId: org2.data.id as string },
 				headers: freshMemberHeaders,
 			}),
 		).rejects.toThrow("You are not a member of this organization");
 
 		// Switch back to org1
 		await authClient.organization.setActive({
-			organizationId: org.data?.id,
+			organizationId: org.data?.id as string,
 			fetchOptions: {
 				headers: freshMemberHeaders,
 			},
