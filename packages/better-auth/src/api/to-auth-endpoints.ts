@@ -49,8 +49,10 @@ const defuReplaceArrays = createDefu((obj, key, value) => {
 	}
 });
 
+type HookHandler = AuthMiddleware | ((inputContext: any) => Promise<any>);
+
 const hooksSourceWeakMap = new WeakMap<
-	AuthMiddleware,
+	HookHandler,
 	`user` | `plugin:${string}`
 >();
 
@@ -59,12 +61,10 @@ type UserInputContext = Partial<
 		EndpointContext<string, any, any, any, any, any, any, any>
 >;
 
-export function toAuthEndpoints<
-	const E extends Record<
-		string,
-		Endpoint
-	>,
->(endpoints: E, ctx: AuthContext | Promise<AuthContext>): E {
+export function toAuthEndpoints<const E extends Record<string, Endpoint>>(
+	endpoints: E,
+	ctx: AuthContext | Promise<AuthContext>,
+): E {
 	const api: Record<
 		string,
 		((
@@ -220,7 +220,7 @@ async function runBeforeHooks(
 	context: InternalContext,
 	hooks: {
 		matcher: (context: HookEndpointContext) => boolean;
-		handler: AuthMiddleware;
+		handler: HookHandler;
 	}[],
 ) {
 	let modifiedContext: Partial<InternalContext> = {};
@@ -285,7 +285,7 @@ async function runAfterHooks(
 	context: InternalContext,
 	hooks: {
 		matcher: (context: HookEndpointContext) => boolean;
-		handler: AuthMiddleware;
+		handler: HookHandler;
 	}[],
 ) {
 	for (const hook of hooks) {
@@ -343,11 +343,11 @@ function getHooks(authContext: AuthContext) {
 	const plugins = authContext.options.plugins || [];
 	const beforeHooks: {
 		matcher: (context: HookEndpointContext) => boolean;
-		handler: AuthMiddleware;
+		handler: HookHandler;
 	}[] = [];
 	const afterHooks: {
 		matcher: (context: HookEndpointContext) => boolean;
-		handler: AuthMiddleware;
+		handler: HookHandler;
 	}[] = [];
 	const beforeHookHandler = authContext.options.hooks?.before;
 	if (beforeHookHandler) {

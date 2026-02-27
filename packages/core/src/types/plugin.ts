@@ -102,11 +102,11 @@ export type BetterAuthPlugin = BetterAuthPluginErrorCodePart & {
 		| {
 				before?: {
 					matcher: (context: HookEndpointContext) => boolean;
-					handler: AuthMiddleware;
+					handler: AuthMiddleware | ((inputContext: any) => Promise<any>);
 				}[];
 				after?: {
 					matcher: (context: HookEndpointContext) => boolean;
-					handler: AuthMiddleware;
+					handler: AuthMiddleware | ((inputContext: any) => Promise<any>);
 				}[];
 		  }
 		| undefined;

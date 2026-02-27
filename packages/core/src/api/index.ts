@@ -145,9 +145,7 @@ export function createAuthEndpoint(
 	const path: string | undefined =
 		typeof pathOrOptions === "string" ? pathOrOptions : undefined;
 	const options: EndpointRuntimeOptions =
-		typeof handlerOrOptions === "object"
-			? handlerOrOptions
-			: pathOrOptions;
+		typeof handlerOrOptions === "object" ? handlerOrOptions : pathOrOptions;
 	const handler =
 		typeof handlerOrOptions === "function" ? handlerOrOptions : handlerOrNever;
 
