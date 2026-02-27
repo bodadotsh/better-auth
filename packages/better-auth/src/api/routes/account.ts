@@ -900,9 +900,9 @@ export const accountInfo = createAuthEndpoint(
 				code: "PROVIDER_NOT_CONFIGURED",
 			});
 		}
-		// @ts-expect-error ctx spread includes query from caller endpoint
 		const tokens = await getAccessToken({
 			...ctx,
+			query: undefined,
 			method: "POST",
 			body: {
 				accountId: account.id,
