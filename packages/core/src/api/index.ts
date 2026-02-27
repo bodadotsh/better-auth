@@ -1,7 +1,11 @@
 import type {
 	Endpoint,
 	EndpointContext,
+	EndpointMetadata,
 	EndpointRuntimeOptions,
+	HTTPMethod,
+	Middleware,
+	StandardSchemaV1,
 } from "better-call";
 import { createEndpoint, createMiddleware } from "better-call";
 import { runWithEndpointContext } from "../context";
@@ -33,70 +37,139 @@ export const createAuthMiddleware = createMiddleware.create({
 
 const use = [optionsMiddleware];
 
-type EndpointHandler<
-	Path extends string,
-	_Options extends EndpointRuntimeOptions,
-	R,
-> = (
-	context: EndpointContext<Path, any, any, any, any, any, any, AuthContext>,
-) => Promise<R>;
+type BodyOption<M, B extends object | undefined = undefined> = M extends
+	| "GET"
+	| "HEAD"
+	| ("GET" | "HEAD")[]
+	? { body?: never }
+	: { body?: B };
 
+type AuthEndpointOptions<
+	Method extends HTTPMethod | HTTPMethod[] | "*",
+	BodySchema extends object | undefined,
+	QuerySchema extends object | undefined,
+	Use extends Middleware[],
+	ReqHeaders extends boolean,
+	ReqRequest extends boolean,
+	Meta extends EndpointMetadata | undefined,
+> = { method: Method } & BodyOption<Method, BodySchema> & {
+		query?: QuerySchema;
+		use?: [...Use];
+		requireHeaders?: ReqHeaders;
+		requireRequest?: ReqRequest;
+		error?: StandardSchemaV1;
+		cloneRequest?: boolean;
+		disableBody?: boolean;
+		metadata?: Meta;
+		[key: string]: any;
+	};
+
+// Path + options + handler overload
 export function createAuthEndpoint<
 	Path extends string,
-	Options extends EndpointRuntimeOptions,
-	R,
+	Method extends HTTPMethod | HTTPMethod[] | "*",
+	BodySchema extends object | undefined = undefined,
+	QuerySchema extends object | undefined = undefined,
+	Use extends Middleware[] = [],
+	ReqHeaders extends boolean = false,
+	ReqRequest extends boolean = false,
+	R = unknown,
+	Meta extends EndpointMetadata | undefined = undefined,
 >(
 	path: Path,
-	options: Options,
-	handler: EndpointHandler<Path, Options, R>,
+	options: AuthEndpointOptions<
+		Method,
+		BodySchema,
+		QuerySchema,
+		Use,
+		ReqHeaders,
+		ReqRequest,
+		Meta
+	>,
+	handler: (
+		ctx: EndpointContext<
+			Path,
+			Method,
+			BodySchema,
+			QuerySchema,
+			Use,
+			ReqHeaders,
+			ReqRequest,
+			AuthContext,
+			Meta
+		>,
+	) => Promise<R>,
 ): Endpoint<Path, any, any, any, any, R>;
 
+// Options-only (virtual/path-less) overload
 export function createAuthEndpoint<
-	Path extends string,
-	Options extends EndpointRuntimeOptions,
-	R,
+	Method extends HTTPMethod | HTTPMethod[] | "*",
+	BodySchema extends object | undefined = undefined,
+	QuerySchema extends object | undefined = undefined,
+	Use extends Middleware[] = [],
+	ReqHeaders extends boolean = false,
+	ReqRequest extends boolean = false,
+	R = unknown,
+	Meta extends EndpointMetadata | undefined = undefined,
 >(
-	options: Options,
-	handler: EndpointHandler<Path, Options, R>,
-): Endpoint<Path, any, any, any, any, R>;
+	options: AuthEndpointOptions<
+		Method,
+		BodySchema,
+		QuerySchema,
+		Use,
+		ReqHeaders,
+		ReqRequest,
+		Meta
+	>,
+	handler: (
+		ctx: EndpointContext<
+			string,
+			Method,
+			BodySchema,
+			QuerySchema,
+			Use,
+			ReqHeaders,
+			ReqRequest,
+			AuthContext,
+			Meta
+		>,
+	) => Promise<R>,
+): Endpoint<string, any, any, any, any, R>;
 
-export function createAuthEndpoint<
-	Path extends string,
-	Opts extends EndpointRuntimeOptions,
-	R,
->(
-	pathOrOptions: Path | Opts,
-	handlerOrOptions: EndpointHandler<Path, Opts, R> | Opts,
+// Implementation
+export function createAuthEndpoint(
+	pathOrOptions: any,
+	handlerOrOptions: any,
 	handlerOrNever?: any,
 ) {
-	const path: Path | undefined =
+	const path: string | undefined =
 		typeof pathOrOptions === "string" ? pathOrOptions : undefined;
-	const options: Opts =
+	const options: EndpointRuntimeOptions =
 		typeof handlerOrOptions === "object"
 			? handlerOrOptions
-			: (pathOrOptions as Opts);
-	const handler: EndpointHandler<Path, Opts, R> =
+			: pathOrOptions;
+	const handler =
 		typeof handlerOrOptions === "function" ? handlerOrOptions : handlerOrNever;
 
-	const mergedOptions = {
-		...options,
-		use: [...(options?.use || []), ...use],
-	} as any;
-
 	if (path) {
-		return createEndpoint(path, mergedOptions, async (ctx: any) =>
-			runWithEndpointContext(ctx, () => handler(ctx)),
+		return createEndpoint(
+			path,
+			{
+				...options,
+				use: [...(options?.use || []), ...use],
+			} as any,
+			async (ctx: any) => runWithEndpointContext(ctx, () => handler(ctx)),
 		);
 	}
 
-	return createEndpoint(mergedOptions, async (ctx: any) =>
-		runWithEndpointContext(ctx, () => handler(ctx)),
+	return createEndpoint(
+		{
+			...options,
+			use: [...(options?.use || []), ...use],
+		} as any,
+		async (ctx: any) => runWithEndpointContext(ctx, () => handler(ctx)),
 	);
 }
 
-export type AuthEndpoint<
-	Path extends string,
-	Opts extends EndpointRuntimeOptions,
-	R,
-> = ReturnType<typeof createAuthEndpoint<Path, Opts, R>>;
+export type AuthEndpoint = ReturnType<typeof createAuthEndpoint>;
 export type AuthMiddleware = ReturnType<typeof createAuthMiddleware>;

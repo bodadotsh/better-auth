@@ -1,5 +1,5 @@
 import type { AuthContext, HookEndpointContext } from "@better-auth/core";
-import type { AuthEndpoint, AuthMiddleware } from "@better-auth/core/api";
+import type { AuthMiddleware } from "@better-auth/core/api";
 import {
 	hasRequestState,
 	runWithEndpointContext,
@@ -8,6 +8,7 @@ import {
 import { shouldPublishLog } from "@better-auth/core/env";
 import { APIError } from "@better-auth/core/error";
 import type {
+	Endpoint,
 	EndpointContext,
 	EndpointRuntimeOptions,
 	InputContext,
@@ -61,7 +62,7 @@ type UserInputContext = Partial<
 export function toAuthEndpoints<
 	const E extends Record<
 		string,
-		Omit<AuthEndpoint<string, EndpointRuntimeOptions, any>, "wrap">
+		Endpoint
 	>,
 >(endpoints: E, ctx: AuthContext | Promise<AuthContext>): E {
 	const api: Record<
