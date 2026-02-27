@@ -90,16 +90,16 @@ export type InferCtx<
 	C extends InputContext<any, any, any, any, any, any>,
 	FetchOptions extends ClientFetchOption,
 > =
-	C["body"] extends Record<string, any>
+	[C["body"]] extends [Record<string, any>]
 		? C["body"] & {
 				fetchOptions?: FetchOptions | undefined;
 			}
-		: C["query"] extends Record<string, any>
+		: [C["query"]] extends [Record<string, any>]
 			? {
 					query: C["query"];
 					fetchOptions?: FetchOptions | undefined;
 				}
-			: C["query"] extends Record<string, any> | undefined
+			: [C["query"]] extends [Record<string, any> | undefined]
 				? {
 						query?: C["query"] | undefined;
 						fetchOptions?: FetchOptions | undefined;
@@ -129,8 +129,8 @@ export type InferRoute<API, COpts extends BetterAuthClientOptions> =
 				? {}
 				: PathToObject<
 						T["path"],
-						T extends (ctx: infer C) => infer R
-							? C extends InputContext<any, any, any, any, any, any>
+						T extends (ctx: infer _C) => infer R
+							? Extract<_C, InputContext<any, any, any, any, any, any>> extends infer C extends InputContext<any, any, any, any, any, any>
 								? <
 										FetchOptions extends ClientFetchOption<
 											Partial<C["body"]> & Record<string, any>,
