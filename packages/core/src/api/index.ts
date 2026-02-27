@@ -35,19 +35,10 @@ const use = [optionsMiddleware];
 
 type EndpointHandler<
 	Path extends string,
-	Options extends EndpointRuntimeOptions,
+	_Options extends EndpointRuntimeOptions,
 	R,
 > = (
-	context: EndpointContext<
-		Path,
-		any,
-		any,
-		any,
-		any,
-		any,
-		any,
-		AuthContext
-	>,
+	context: EndpointContext<Path, any, any, any, any, any, any, AuthContext>,
 ) => Promise<R>;
 
 export function createAuthEndpoint<
@@ -93,16 +84,13 @@ export function createAuthEndpoint<
 	} as any;
 
 	if (path) {
-		return createEndpoint(
-			path,
-			mergedOptions,
-			async (ctx: any) => runWithEndpointContext(ctx, () => handler(ctx)),
+		return createEndpoint(path, mergedOptions, async (ctx: any) =>
+			runWithEndpointContext(ctx, () => handler(ctx)),
 		);
 	}
 
-	return createEndpoint(
-		mergedOptions,
-		async (ctx: any) => runWithEndpointContext(ctx, () => handler(ctx)),
+	return createEndpoint(mergedOptions, async (ctx: any) =>
+		runWithEndpointContext(ctx, () => handler(ctx)),
 	);
 }
 
