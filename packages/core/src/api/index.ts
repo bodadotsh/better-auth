@@ -99,7 +99,19 @@ export function createAuthEndpoint<
 			Meta
 		>,
 	) => Promise<R>,
-): Endpoint<Path, any, BodySchema extends StandardSchemaV1 ? NonNullable<BodySchema["~standard"]["types"]>["input"] : any, QuerySchema extends StandardSchemaV1 ? NonNullable<QuerySchema["~standard"]["types"]>["input"] : any, any, R, Meta>;
+): Endpoint<
+	Path,
+	any,
+	BodySchema extends StandardSchemaV1
+		? NonNullable<BodySchema["~standard"]["types"]>["input"]
+		: any,
+	QuerySchema extends StandardSchemaV1
+		? NonNullable<QuerySchema["~standard"]["types"]>["input"]
+		: any,
+	any,
+	R,
+	Meta
+>;
 
 // Options-only (virtual/path-less) overload
 export function createAuthEndpoint<
@@ -134,7 +146,19 @@ export function createAuthEndpoint<
 			Meta
 		>,
 	) => Promise<R>,
-): Endpoint<string, any, BodySchema extends StandardSchemaV1 ? NonNullable<BodySchema["~standard"]["types"]>["input"] : any, QuerySchema extends StandardSchemaV1 ? NonNullable<QuerySchema["~standard"]["types"]>["input"] : any, any, R, Meta>;
+): Endpoint<
+	string,
+	any,
+	BodySchema extends StandardSchemaV1
+		? NonNullable<BodySchema["~standard"]["types"]>["input"]
+		: any,
+	QuerySchema extends StandardSchemaV1
+		? NonNullable<QuerySchema["~standard"]["types"]>["input"]
+		: any,
+	any,
+	R,
+	Meta
+>;
 
 // Implementation
 export function createAuthEndpoint(
