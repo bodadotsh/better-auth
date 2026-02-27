@@ -87,7 +87,7 @@ export type InferUserUpdateCtx<
 >;
 
 export type InferCtx<
-	C extends InputContext<any, any>,
+	C extends InputContext<any, any, any, any, any, any>,
 	FetchOptions extends ClientFetchOption,
 > =
 	C["body"] extends Record<string, any>
@@ -130,7 +130,7 @@ export type InferRoute<API, COpts extends BetterAuthClientOptions> =
 				: PathToObject<
 						T["path"],
 						T extends (ctx: infer C) => infer R
-							? C extends InputContext<any, any>
+							? C extends InputContext<any, any, any, any, any, any>
 								? <
 										FetchOptions extends ClientFetchOption<
 											Partial<C["body"]> & Record<string, any>,

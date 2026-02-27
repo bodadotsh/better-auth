@@ -1,7 +1,7 @@
 import type {
+	Endpoint,
 	EndpointContext,
-	EndpointOptions,
-	StrictEndpoint,
+	EndpointRuntimeOptions,
 } from "better-call";
 import { createEndpoint, createMiddleware } from "better-call";
 import { runWithEndpointContext } from "../context";
@@ -35,32 +35,43 @@ const use = [optionsMiddleware];
 
 type EndpointHandler<
 	Path extends string,
-	Options extends EndpointOptions,
+	Options extends EndpointRuntimeOptions,
 	R,
-> = (context: EndpointContext<Path, Options, AuthContext>) => Promise<R>;
+> = (
+	context: EndpointContext<
+		Path,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		AuthContext
+	>,
+) => Promise<R>;
 
 export function createAuthEndpoint<
 	Path extends string,
-	Options extends EndpointOptions,
+	Options extends EndpointRuntimeOptions,
 	R,
 >(
 	path: Path,
 	options: Options,
 	handler: EndpointHandler<Path, Options, R>,
-): StrictEndpoint<Path, Options, R>;
+): Endpoint<Path, any, any, any, any, R>;
 
 export function createAuthEndpoint<
 	Path extends string,
-	Options extends EndpointOptions,
+	Options extends EndpointRuntimeOptions,
 	R,
 >(
 	options: Options,
 	handler: EndpointHandler<Path, Options, R>,
-): StrictEndpoint<Path, Options, R>;
+): Endpoint<Path, any, any, any, any, R>;
 
 export function createAuthEndpoint<
 	Path extends string,
-	Opts extends EndpointOptions,
+	Opts extends EndpointRuntimeOptions,
 	R,
 >(
 	pathOrOptions: Path | Opts,
@@ -76,31 +87,28 @@ export function createAuthEndpoint<
 	const handler: EndpointHandler<Path, Opts, R> =
 		typeof handlerOrOptions === "function" ? handlerOrOptions : handlerOrNever;
 
+	const mergedOptions = {
+		...options,
+		use: [...(options?.use || []), ...use],
+	} as any;
+
 	if (path) {
 		return createEndpoint(
 			path,
-			{
-				...options,
-				use: [...(options?.use || []), ...use],
-			},
-			// todo: prettify the code, we want to call `runWithEndpointContext` to top level
-			async (ctx) => runWithEndpointContext(ctx as any, () => handler(ctx)),
+			mergedOptions,
+			async (ctx: any) => runWithEndpointContext(ctx, () => handler(ctx)),
 		);
 	}
 
 	return createEndpoint(
-		{
-			...options,
-			use: [...(options?.use || []), ...use],
-		},
-		// todo: prettify the code, we want to call `runWithEndpointContext` to top level
-		async (ctx) => runWithEndpointContext(ctx as any, () => handler(ctx)),
+		mergedOptions,
+		async (ctx: any) => runWithEndpointContext(ctx, () => handler(ctx)),
 	);
 }
 
 export type AuthEndpoint<
 	Path extends string,
-	Opts extends EndpointOptions,
+	Opts extends EndpointRuntimeOptions,
 	R,
 > = ReturnType<typeof createAuthEndpoint<Path, Opts, R>>;
 export type AuthMiddleware = ReturnType<typeof createAuthMiddleware>;

@@ -9,7 +9,7 @@ import { shouldPublishLog } from "@better-auth/core/env";
 import { APIError } from "@better-auth/core/error";
 import type {
 	EndpointContext,
-	EndpointOptions,
+	EndpointRuntimeOptions,
 	InputContext,
 } from "better-call";
 import { kAPIErrorHeaderSymbol, toResponse } from "better-call";
@@ -17,7 +17,20 @@ import { createDefu } from "defu";
 import { isAPIError } from "../utils/is-api-error";
 
 type InternalContext = Partial<
-	InputContext<string, any> & EndpointContext<string, any>
+	InputContext<string, any, any, any, any, any> &
+		EndpointContext<
+			string,
+			any,
+			any,
+			any,
+			any,
+			any,
+			any,
+			AuthContext & {
+				returned?: unknown | undefined;
+				responseHeaders?: Headers | undefined;
+			}
+		>
 > & {
 	path: string;
 	asResponse?: boolean | undefined;
@@ -41,22 +54,24 @@ const hooksSourceWeakMap = new WeakMap<
 >();
 
 type UserInputContext = Partial<
-	InputContext<string, any> & EndpointContext<string, any>
+	InputContext<string, any, any, any, any, any> &
+		EndpointContext<string, any, any, any, any, any, any, any>
 >;
 
 export function toAuthEndpoints<
 	const E extends Record<
 		string,
-		Omit<AuthEndpoint<string, EndpointOptions, any>, "wrap">
+		Omit<AuthEndpoint<string, EndpointRuntimeOptions, any>, "wrap">
 	>,
 >(endpoints: E, ctx: AuthContext | Promise<AuthContext>): E {
 	const api: Record<
 		string,
 		((
-			context: EndpointContext<string, any> & InputContext<string, any>,
+			context: EndpointContext<string, any, any, any, any, any, any, any> &
+				InputContext<string, any, any, any, any, any>,
 		) => Promise<any>) & {
 			path?: string | undefined;
-			options?: EndpointOptions | undefined;
+			options?: EndpointRuntimeOptions | undefined;
 		}
 	> = {};
 

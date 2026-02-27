@@ -78,9 +78,7 @@ export type BetterAuthPluginRegistryIdentifier = keyof BetterAuthPluginRegistry<
 
 export type GenericEndpointContext<
 	Options extends BetterAuthOptions = BetterAuthOptions,
-> = EndpointContext<string, any> & {
-	context: AuthContext<Options>;
-};
+> = EndpointContext<string, any, any, any, any, any, any, AuthContext<Options>>;
 
 export interface InternalAdapter<
 	_Options extends BetterAuthOptions = BetterAuthOptions,
